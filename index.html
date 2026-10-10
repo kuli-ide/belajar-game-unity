@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Belajar Game Unity</title>
+  <meta name="description" content="Belajar membuat game 2D di Unity dengan simulasi interaktif, contoh kode C#, dan kuis singkat.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Terapkan tema tersimpan sebelum halaman digambar agar tidak berkedip.
+    (function () {
+      try {
+        var t = localStorage.getItem('bgu-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Lompat ke konten</a>
+
+  <header class="topbar">
+    <div class="wrap topbar-in">
+      <a class="brand" href="#/" aria-label="Belajar Game Unity, ke beranda">
+        <span class="coin" aria-hidden="true"></span>
+        <span>Belajar Game Unity</span>
+      </a>
+
+      <div class="xp" role="group" aria-label="Progres belajar">
+        <span class="xp-level" id="xpLevel">Level 1</span>
+        <div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0" id="xpBar">
+          <div class="xp-fill" id="xpFill"></div>
+        </div>
+        <span class="xp-text" id="xpText">0/150 XP</span>
+      </div>
+
+      <button class="btn ghost small" id="themeBtn" type="button">Mode gelap</button>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <noscript><p class="wrap">Situs ini membutuhkan JavaScript agar pelajaran dan simulasi bisa tampil.</p></noscript>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <p>Situs statis (HTML, CSS, JavaScript biasa) yang bisa dipasang di GitHub Pages. Progres belajarmu tersimpan di browser ini saja.</p>
+      <button class="btn ghost small" id="resetBtn" type="button">Hapus progres</button>
+    </div>
+  </footer>
+
+  <script src="js/lessons.js"></script>
+  <script src="js/playground.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
