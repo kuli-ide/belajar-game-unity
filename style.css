@@ -483,6 +483,19 @@ a { color: inherit; }
   border-radius: var(--radius);
 }
 
+.flow { margin: 1.2rem 0 1.5rem; padding: 14px 16px; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); }
+.flow-title { font-weight: 800; margin-bottom: 10px; }
+.flow-list { list-style: none; margin: 0; padding: 0; max-width: 560px; }
+.flow-step { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; margin-bottom: 18px; background: var(--bg); border: 2px solid var(--line); border-radius: 10px; }
+.flow-step:not(:last-child)::after { content: "\2193"; position: absolute; left: 22px; bottom: -22px; color: var(--muted); font-weight: 800; line-height: 1; }
+.flow-n { flex: none; min-width: 1.6em; height: 1.6em; display: inline-grid; place-items: center; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 0.8rem; font-weight: 800; }
+.flow-decision { border-color: var(--accent); }
+.flow-decision .flow-n { background: var(--accent); }
+.flow-branch { margin-top: 6px; font-size: 0.92rem; color: var(--muted); }
+.flow-branch.no::before { content: "\21BA  "; }
+.flow-branch.yes::before { content: "\2713  "; }
+.flow-caption { margin: 0; font-size: 0.92rem; color: var(--muted); }
+
 .code {
   margin: 1.2rem 0 1.5rem;
   border: 2px solid var(--line);

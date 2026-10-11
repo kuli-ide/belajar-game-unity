@@ -104,6 +104,16 @@
           '</tbody></table></div>';
       case 'tree':
         return '<pre class="tree" tabindex="0">' + esc(b.text) + '</pre>';
+      case 'flow':
+        var stepNo = 0;
+        return '<figure class="flow wide" style="margin-inline:0">' +
+          (b.title ? '<figcaption class="flow-title">' + esc(b.title) + '</figcaption>' : '') +
+          '<ol class="flow-list">' + b.items.map(function (it) {
+            if (typeof it === 'string') return '<li class="flow-step"><span class="flow-n">' + (++stepNo) + '</span><span>' + fmt(it) + '</span></li>';
+            return '<li class="flow-step flow-decision"><span class="flow-n">?</span><div><strong>' + fmt(it.decision) + '</strong>' +
+              '<div class="flow-branch no">' + fmt(it.no) + '</div><div class="flow-branch yes">' + fmt(it.yes) + '</div></div></li>';
+          }).join('') + '</ol>' +
+          (b.caption ? '<p class="flow-caption">' + fmt(b.caption) + '</p>' : '') + '</figure>';
       case 'code':
         return '<figure class="code wide" style="margin-inline:0"><div class="code-bar"><span>' + esc(b.file || 'C#') + '</span>' +
           '<button class="copy" type="button">Salin</button></div>' +

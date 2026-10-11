@@ -487,5 +487,207 @@ sesi = jurusan.soal
           explain: 'Kalau method tidak terpanggil, syarat deteksi collision-nya yang belum terpenuhi.' }
       ] }
     ]
+  },
+  {
+    id: 'menyusun-gdd',
+    title: 'Menyusun Game Design Document (GDD)',
+    summary: 'Tulis rancangan game sebelum membuat kode, memakai game Pengenalan Jurusan SMK sebagai contoh.',
+    minutes: 15,
+    xp: 60,
+    blocks: [
+      { type: 'p', text: 'Game Design Document (GDD) adalah dokumen yang menjelaskan **game apa yang akan dibuat, untuk siapa, dan bagaimana cara kerjanya**. Dengan GDD, kamu tidak membuat fitur sambil menebak-nebak, dan orang lain (guru, teman satu tim) bisa ikut memberi masukan sebelum kode ditulis.' },
+      { type: 'p', text: 'Di pelajaran ini kamu belajar menyusun GDD lewat satu contoh nyata: **Game Pengenalan Jurusan SMK**, platformer 2D yang mengajak calon siswa berkeliling sekolah, bertanya ke Guru Piket, lalu mencoba kuis di kelas jurusan pilihannya.' },
+      { type: 'note', kind: 'tip', title: 'GDD tidak harus panjang', text: 'Tulis secukupnya. Bagian yang belum diketahui cukup ditandai `[isi]`, lalu dilengkapi saat keputusannya sudah ada. Dokumen yang ringkas dan terus diperbarui lebih berguna daripada dokumen tebal yang tidak dibaca.' },
+
+      { type: 'h', text: '1. Kerangka GDD' },
+      { type: 'p', text: 'Urutan bagian di bawah dipakai pada contoh kita. Kamu boleh menambah atau membuang bagian sesuai kebutuhan game-mu.' },
+      { type: 'table', head: ['Bagian', 'Pertanyaan yang dijawab'], rows: [
+        ['Ringkasan Game', 'Game apa ini? Genre, engine, platform, dan satu kalimat pitch.'],
+        ['Tujuan dan Target Pemain', 'Siapa pemainnya dan apa ukuran berhasil?'],
+        ['Alur Permainan', 'Apa yang dilakukan pemain dari awal sampai selesai?'],
+        ['Mekanik dan Kontrol', 'Tombol apa melakukan apa, dan apa aturannya?'],
+        ['Karakter dan NPC', 'Siapa saja tokohnya dan apa perannya?'],
+        ['Level dan Lingkungan', 'Area apa saja dan bagaimana tata letaknya?'],
+        ['Data, Kuis, dan Skor', 'Data apa yang dipakai dan bagaimana skor dihitung?'],
+        ['Antarmuka (UI/UX)', 'Layar dan tombol apa yang muncul, kapan?'],
+        ['Seni dan Audio', 'Gaya visual, suara, dan sumber asetnya?'],
+        ['Spesifikasi Teknis', 'Versi Unity, paket, daftar script, aturan teknis?'],
+        ['Rencana Pengerjaan', 'Tahap, penanggung jawab, tenggat?'],
+        ['Pengujian', 'Bagaimana tahu game sudah benar?'],
+        ['Pertanyaan Terbuka', 'Apa yang belum diputuskan?']
+      ] },
+
+      { type: 'h', text: '2. Ringkasan dan tujuan' },
+      { type: 'p', text: 'Mulai dari tabel identitas game. Isi yang sudah pasti, tandai yang belum dengan tanda kurung siku.' },
+      { type: 'table', head: ['Item', 'Isi'], rows: [
+        ['Judul', 'Game Pengenalan Jurusan SMK'],
+        ['Genre', 'Platformer 2D, edukasi'],
+        ['Engine', 'Unity 2D'],
+        ['Platform', '[PC / WebGL / Android: pilih satu atau lebih]'],
+        ['Jumlah pemain', 'Satu pemain'],
+        ['Pemain sasaran', 'Calon siswa baru'],
+        ['Lama satu sesi', '[mis. 10 menit]']
+      ] },
+      { type: 'p', text: 'Lalu tulis **pitch** dua sampai tiga kalimat tentang pengalaman yang ingin dirasakan pemain, bukan daftar fitur. Contoh: pemain berjalan di sekolah, bertanya ke guru, lalu mencoba menjawab soal di kelas yang paling menarik.' },
+      { type: 'p', text: 'Bagian tujuan memakai tabel tiga kolom: **pihak**, **yang ingin dicapai**, dan **ukuran berhasil**. Ukuran berhasil harus bisa dicek, misalnya "pemain menyelesaikan minimal 1 kuis".' },
+      { type: 'table', head: ['Pihak', 'Yang ingin dicapai', 'Ukuran berhasil'], rows: [
+        ['Calon siswa', 'Mengetahui jurusan yang ada dan mencoba soal dasar tiap jurusan', 'Menyelesaikan minimal 1 kuis'],
+        ['Sekolah', 'Memperkenalkan jurusan dan menarik minat calon siswa', 'Jumlah pemain, umpan balik panitia'],
+        ['Guru kejuruan', 'Menunjukkan isi dasar jurusannya lewat soal', 'Soal sesuai kurikulum dasar jurusan']
+      ] },
+      { type: 'note', kind: 'tip', title: 'Tulis juga yang TIDAK dibuat', text: 'Bagian "di luar cakupan versi pertama" (misalnya pendaftaran online atau penilaian resmi) mencegah proyek melebar tanpa batas.' },
+
+      { type: 'h', text: '3. Alur permainan' },
+      { type: 'p', text: 'Gambarkan satu putaran bermain sebagai urutan langkah. Percabangan (keputusan) ditandai terpisah. Contoh di bawah punya 9 langkah dan 1 percabangan.' },
+      { type: 'flow', title: 'Satu putaran bermain', items: [
+        'Muncul di koridor sekolah',
+        'Bicara dengan Guru Piket (tekan E)',
+        'Pilih jurusan dan lihat lokasi kelas',
+        'Ke pintu kelas, tekan E',
+        { decision: 'Jurusan cocok?', no: 'Tidak: muncul pesan petunjuk, pemain bisa mencoba lagi', yes: 'Ya: pemain pindah ke ruang kelas' },
+        'Masuk ruang kelas jurusan',
+        'Bicara dengan Guru Kejuruan',
+        'Jawab soal acak, +10 untuk tiap jawaban benar',
+        'Lihat hasil dan skor',
+        'Ulangi kuis atau kembali ke koridor'
+      ], caption: 'Pintu kelas hanya terbuka untuk jurusan yang dipilih di Guru Piket.' },
+      { type: 'p', text: 'Tutup bagian ini dengan **kondisi selesai**: kapan game dianggap tamat? Misalnya setelah satu kuis, atau setelah semua jurusan dicoba. Keputusan ini memengaruhi seluruh rancangan, jadi jangan dibiarkan kosong terlalu lama.' },
+
+      { type: 'h', text: '4. Mekanik dan kontrol' },
+      { type: 'p', text: 'Satu baris per aksi: kontrol, perilaku, dan nilai awal yang nanti jadi field di Inspector.' },
+      { type: 'table', head: ['Aksi', 'Kontrol', 'Perilaku', 'Nilai awal'], rows: [
+        ['Jalan kiri / kanan', 'Panah kiri/kanan atau A/D', 'Kecepatan tetap, sprite menoleh ke arah jalan', 'Move Speed 6'],
+        ['Lompat', 'Spasi', 'Hanya saat menyentuh tanah (groundCheck)', 'Jump Force 12'],
+        ['Interaksi', 'E', 'Aktif saat pemain di area trigger NPC atau pintu', '-'],
+        ['Pilih jawaban atau menu', 'Klik mouse', 'Tombol dialog dan kuis', '-'],
+        ['Papan skor', 'Tab', 'Tampil atau sembunyi', '-']
+      ] },
+      { type: 'p', text: 'Di bawah tabel, tulis **aturan penting** sebagai kalimat pendek yang bisa diuji:' },
+      { type: 'steps', items: [
+        'Saat dialog atau kuis terbuka, pemain tidak bisa bergerak.',
+        'Pintu hanya terbuka bila jurusan yang dipilih di Guru Piket sama dengan jurusan pintu.',
+        'Prompt "Tekan E" muncul saat pemain dekat objek yang bisa diajak berinteraksi.'
+      ] },
+
+      { type: 'h', text: '5. Karakter, NPC, dan level' },
+      { type: 'table', head: ['Karakter', 'Peran di game', 'Perilaku'], rows: [
+        ['Player (calon siswa)', 'Dikendalikan pemain', 'Jalan, lompat, berinteraksi dengan E'],
+        ['NPC Guru Piket', 'Pemberi informasi jurusan', 'Menampilkan daftar jurusan, menyimpan jurusan yang dipilih, menyebut lokasi kelas'],
+        ['NPC Guru Kejuruan', 'Pemberi kuis per jurusan', 'Memberi soal acak sesuai jurusan, menghitung skor, menampilkan hasil']
+      ] },
+      { type: 'p', text: 'Untuk setiap NPC, siapkan contoh dialog supaya nada bicaranya konsisten, misalnya Guru Piket: "Selamat datang di sekolah kami, calon siswa baru! Mau tahu jurusan apa saja yang ada?"' },
+      { type: 'p', text: 'Level dijelaskan per area. Semua area contoh kita ada dalam satu scene sekolah:' },
+      { type: 'table', head: ['Area', 'Isi', 'Keterangan'], rows: [
+        ['Koridor sekolah', 'Titik muncul pemain, Guru Piket, pintu kelas tiap jurusan, platform', 'Pemain mulai di sini'],
+        ['Ruang kelas (satu per jurusan)', 'Guru Kejuruan, pintu keluar, titik muncul', 'Kuis jurusan tersebut']
+      ] },
+      { type: 'note', kind: 'warn', title: 'Aturan penataan yang sering terlupa', text: 'Letakkan titik muncul **di samping** pintu, bukan di dalam area trigger-nya, dan beri lantai layer tanah agar deteksi lompat bekerja. Aturan seperti ini sebaiknya ditulis di GDD supaya tidak jadi bug yang sama berulang kali.' },
+
+      { type: 'h', text: '6. Data, kuis, dan skor' },
+      { type: 'p', text: 'Putuskan bentuk datanya sejak awal. Pada contoh ini tiap jurusan adalah satu aset **ScriptableObject** sehingga soal bisa ditambah tanpa mengubah kode.' },
+      { type: 'table', head: ['Field', 'Isi', 'Contoh'], rows: [
+        ['Nama jurusan', 'Nama lengkap', 'Rekayasa Perangkat Lunak'],
+        ['Singkatan', 'Dipakai di pesan dan papan skor', 'RPL'],
+        ['Deskripsi', 'Penjelasan singkat yang dibaca pemain', '2 sampai 3 kalimat'],
+        ['Lokasi kelas', 'Petunjuk arah dari koridor', 'Pintu ketiga dari kiri'],
+        ['Soal per sesi', 'Jumlah soal yang diambil acak', '5'],
+        ['Daftar soal', 'Pertanyaan, 4 pilihan, satu jawaban benar', 'lihat contoh di bawah']
+      ] },
+      { type: 'table', head: ['Aturan skor', 'Nilai'], rows: [
+        ['Poin per jawaban benar', '10'],
+        ['Pengurangan untuk jawaban salah', 'Tidak ada, jawaban yang benar ditampilkan'],
+        ['Skor maksimum', 'Soal per sesi × 10'],
+        ['Komentar akhir', '80% benar atau lebih: "Luar biasa"; 50% atau lebih: "Bagus"; di bawahnya: "Tetap semangat"'],
+        ['Ulangi kuis', 'Boleh, soal diacak ulang dan skor kembali ke 0']
+      ] },
+      { type: 'table', head: ['Jurusan', 'Contoh soal', 'Jawaban benar'], rows: [
+        ['RPL', 'Apa kepanjangan dari HTML?', 'HyperText Markup Language'],
+        ['Pengembangan GIM', 'Bahasa pemrograman apa yang digunakan pada Unity?', 'C#']
+      ] },
+      { type: 'note', kind: 'tip', title: 'Soal dari ahlinya', text: 'Soal sebaiknya disusun dan diperiksa guru kejuruan. Catat siapa penyusun dan pemeriksanya di bagian Pertanyaan Terbuka.' },
+
+      { type: 'h', text: '7. Antarmuka (UI/UX)' },
+      { type: 'p', text: 'Daftarkan tiap layar: isinya, tombolnya, dan kapan muncul. Ini langsung menjadi daftar panel yang harus kamu buat di Canvas.' },
+      { type: 'table', head: ['Layar', 'Isi', 'Tombol', 'Muncul saat'], rows: [
+        ['Dialog Guru Piket', 'Sapaan, daftar jurusan, deskripsi dan lokasi kelas', 'Satu tombol per jurusan, "Pilih jurusan lain", "Terima kasih"', 'Tekan E di dekat Guru Piket'],
+        ['Pesan pintu', 'Teks singkat (belum memilih jurusan, salah kelas)', 'Tanpa tombol, hilang sendiri setelah 3 detik', 'Tekan E di pintu yang tidak cocok'],
+        ['Kuis: pengantar', 'Nama jurusan, jumlah soal, nilai per soal', 'Mulai, Tutup', 'Tekan E di dekat Guru Kejuruan'],
+        ['Kuis: soal', 'Nomor, pertanyaan, 4 pilihan, umpan balik, skor berjalan', '4 tombol jawaban, "Soal berikutnya"', 'Setelah Mulai'],
+        ['Kuis: hasil', 'Jumlah benar, skor, komentar', 'Ulangi, Kembali ke sekolah', 'Setelah soal terakhir']
+      ] },
+      { type: 'p', text: 'Tambahkan pedoman tampilan yang konkret: semua teks memakai TextMeshPro, jawaban benar hijau dan salah merah, resolusi acuan 1920 x 1080 dengan **Scale With Screen Size**, dan ukuran huruf cukup besar untuk layar proyektor.' },
+
+      { type: 'h', text: '8. Seni, audio, dan teknis' },
+      { type: 'p', text: 'Untuk seni dan audio, buat tabel kebutuhan (karakter, NPC, latar, UI, musik, efek suara) dengan kolom **gaya**, **sumber aset**, dan **status**. Aturan pentingnya:' },
+      { type: 'steps', items: [
+        'Semua aset berlisensi jelas; simpan sumber dan lisensinya di satu daftar.',
+        'Logo dan nama sekolah dipakai atas izin pihak sekolah.',
+        'Foto siswa atau guru yang asli hanya dipakai dengan izin tertulis.'
+      ] },
+      { type: 'p', text: 'Bagian teknis berisi versi Unity, paket, jenis input, dan **daftar script dengan satu tugas masing-masing**. Daftar ini mencerminkan prinsip satu script, satu tanggung jawab:' },
+      { type: 'table', head: ['Script', 'Tugas'], rows: [
+        ['JurusanData, QuestionData', 'Data jurusan dan soal (ScriptableObject)'],
+        ['GameData', 'Menyimpan jurusan terpilih, skor, dan status dialog'],
+        ['PlayerController2D', 'Gerak, lompat, deteksi tanah'],
+        ['Interactable', 'Dasar untuk objek yang bisa diajak berinteraksi dengan E'],
+        ['NPCGuruPiket', 'Dialog daftar jurusan dan penyimpanan pilihan'],
+        ['DoorKelas', 'Pintu kelas dan pindah scene'],
+        ['NPCGuruKejuruan', 'Kuis acak, skor, hasil']
+      ] },
+      { type: 'note', kind: 'warn', title: 'Aturan teknis', text: 'Nama scene di kode harus sama persis dengan nama file dan terdaftar di Build Profiles. Pemain harus bertag `Player`, dan lantai memakai layer tanah.' },
+
+      { type: 'h', text: '9. Rencana pengerjaan dan pengujian' },
+      { type: 'p', text: 'Pecah pekerjaan menjadi tahap yang bisa dicoba satu per satu. Tiap tahap punya penanggung jawab, tenggat, dan status.' },
+      { type: 'table', head: ['Tahap', 'Isi pekerjaan'], rows: [
+        ['1. Prototipe gerak', 'Pemain berjalan dan melompat di koridor'],
+        ['2. Guru Piket', 'Dialog dan daftar jurusan, jurusan tersimpan'],
+        ['3. Pintu dan ruang kelas', 'Pintu hanya terbuka untuk jurusan yang cocok'],
+        ['4. Kuis dan skor', 'Soal acak, skor, layar hasil'],
+        ['5. Bank soal', 'Soal tiap jurusan dari guru kejuruan'],
+        ['6. Tampilan akhir', 'Sprite, UI, musik, dan efek suara'],
+        ['7. Uji coba', 'Dicoba beberapa siswa, catat masukan, perbaiki'],
+        ['8. Dipakai', 'Dipasang di perangkat sekolah untuk penerimaan siswa']
+      ] },
+      { type: 'p', text: 'Pengujian ditulis sebagai kolom **yang diuji** dan **lulus bila**, supaya hasilnya jelas lulus atau tidak:' },
+      { type: 'table', head: ['Area', 'Yang diuji', 'Lulus bila'], rows: [
+        ['Gerak', 'Jalan dan lompat di semua platform', 'Melompat hanya saat di tanah, tidak menembus lantai'],
+        ['Interaksi', 'Tombol E di dekat dan jauh dari NPC dan pintu', 'Prompt hanya muncul saat dekat; tidak aktif saat dialog terbuka'],
+        ['Pintu kelas', 'Belum memilih jurusan, salah pintu, pintu yang tepat', 'Pesan sesuai muncul; hanya pintu yang tepat memindahkan pemain'],
+        ['Kuis', 'Jawab benar, salah, ulangi, kembali ke sekolah', 'Skor benar, tidak bisa menjawab dua kali, soal teracak ulang']
+      ] },
+      { type: 'p', text: 'Terakhir, uji dengan calon siswa sungguhan. Pertanyaan kuncinya: tanpa dibantu, apakah mereka tahu harus bicara ke Guru Piket dulu? Apakah soal terlalu mudah atau sulit?' },
+
+      { type: 'h', text: 'Latihan: GDD untuk game-mu' },
+      { type: 'steps', items: [
+        'Pilih satu ide game kecil dan tulis tabel identitas serta pitch-nya.',
+        'Gambar alur satu putaran bermain dalam 5 sampai 9 langkah.',
+        'Buat tabel kontrol lengkap dengan nilai awal.',
+        'Tulis 3 aturan penting yang bisa diuji.',
+        'Kumpulkan hal yang belum jelas di daftar Pertanyaan Terbuka, lalu cari jawabannya satu per satu.'
+      ] },
+
+      { type: 'quiz', questions: [
+        { q: 'Apa fungsi utama GDD?',
+          options: ['Pengganti kode game', 'Menyepakati rancangan game sebelum dan selama dibuat', 'Dokumen yang hanya dibaca setelah game rilis', 'Daftar harga aset'],
+          answer: 1,
+          explain: 'GDD adalah rancangan bersama: apa yang dibuat, untuk siapa, dan bagaimana aturannya, sehingga keputusan tidak hanya ada di kepala satu orang.' },
+        { q: 'Mana "ukuran berhasil" yang baik untuk bagian Tujuan?',
+          options: ['Game harus bagus', 'Pemain menyelesaikan minimal 1 kuis', 'Semua orang suka', 'Grafik menarik'],
+          answer: 1,
+          explain: 'Ukuran berhasil harus bisa dicek dengan angka atau kejadian yang jelas.' },
+        { q: 'Mengapa bagian "di luar cakupan versi pertama" berguna?',
+          options: ['Untuk mengisi halaman', 'Supaya proyek tidak melebar tanpa batas', 'Untuk menghapus fitur utama', 'Agar game tidak perlu diuji'],
+          answer: 1,
+          explain: 'Menulis apa yang sengaja belum dibuat menjaga jadwal dan fokus tim.' },
+        { q: 'Kolom "Lulus bila" pada tabel pengujian berfungsi untuk...',
+          options: ['Menentukan warna tombol', 'Membuat hasil uji jelas lulus atau tidak', 'Menghitung skor pemain', 'Menamai script'],
+          answer: 1,
+          explain: 'Kriteria yang tertulis membuat pengujian objektif dan bisa diulang oleh siapa pun.' },
+        { q: 'Kenapa data jurusan dan soal disimpan sebagai ScriptableObject pada rancangan ini?',
+          options: ['Agar soal bisa ditambah tanpa mengubah kode', 'Agar game otomatis online', 'Agar tidak perlu Canvas', 'Agar skor tersimpan ke server'],
+          answer: 0,
+          explain: 'Data terpisah dari kode membuat guru atau desainer bisa menambah soal lewat Inspector.' }
+      ] }
+    ]
   }
 ];
