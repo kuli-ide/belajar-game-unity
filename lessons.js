@@ -138,20 +138,30 @@ public class PlayerController2D : MonoBehaviour
       { type: 'h', text: 'Kelas dasar untuk semua yang bisa diajak interaksi' },
       { type: 'code', file: 'Interactable.cs', code: `using UnityEngine;
 
+// Basis untuk NPC dan pintu. Syarat objek:
+// - punya Collider2D dengan "Is Trigger" aktif (area interaksi)
+// - Player memakai tag "Player"
 public abstract class Interactable : MonoBehaviour
 {
+    [Header("Interaksi")]
     [SerializeField] protected KeyCode interactKey = KeyCode.E;
-    [SerializeField] protected GameObject promptUI;   // teks "Tekan E"
+    [SerializeField] protected GameObject promptUI;   // contoh: teks "Tekan E" di atas objek
 
     protected bool playerInRange;
 
+    protected virtual void Start()
+    {
+        if (promptUI != null) promptUI.SetActive(false);
+    }
+
     protected virtual void Update()
     {
-        if (playerInRange && Input.GetKeyDown(interactKey))
+        if (playerInRange && !GameData.IsInDialog && Input.GetKeyDown(interactKey))
             Interact();
     }
 
     protected abstract void Interact();
+    protected virtual void OnPlayerExit() { }
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -165,8 +175,10 @@ public abstract class Interactable : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         playerInRange = false;
         if (promptUI != null) promptUI.SetActive(false);
+        OnPlayerExit();
     }
 }` },
+      { type: 'note', kind: 'warn', title: 'Script ini butuh GameData', text: '`Interactable` membaca `GameData.IsInDialog`. Buat berkas `GameData.cs` dari pelajaran **Pindah scene dan membawa data** sebelum menyalin script ini, kalau tidak Unity melaporkan error `GameData` tidak ditemukan.' },
       { type: 'p', text: 'NPC dan pintu cukup mewarisi `Interactable` lalu mengisi `Interact()`. Urusan jarak dan tombol E sudah beres di kelas dasar. Lihat simulasi di pelajaran sebelumnya: tekan E di dekat Guru Piket atau pintu.' },
       { type: 'note', kind: 'tip', title: 'Mencari penyebab trigger tidak jalan', text: 'Tambahkan `Debug.Log(other.name)` di `OnTriggerEnter2D`. Kalau log tidak pernah muncul, periksa tiga hal: Is Trigger, Rigidbody2D pada Player, dan tag Player.' },
       { type: 'h', text: 'Cek pemahaman' },
@@ -209,51 +221,96 @@ GuruPiket                        (sprite NPC + script NPCGuruPiket)` },
         'Buat satu `Button - TextMeshPro`, beri **Layout Element** dengan Preferred Height 60, seret ke folder Project untuk jadi **prefab**, lalu hapus dari Hierarchy.',
         'Pasang script di **objek NPC**, bukan di panel. Script pada objek yang nonaktif tidak berjalan.'
       ] },
+      { type: 'note', kind: 'warn', title: 'Siapkan berkas pendukung dulu', text: 'Script di bawah memakai `Interactable`, `GameData`, `JurusanData`, dan `QuestionData`. Buat keempatnya lebih dulu (lihat pelajaran **Area interaksi dengan trigger**, **Pindah scene dan membawa data**, dan **Kuis dan skor dengan ScriptableObject**). Urutan yang aman: `QuestionData`, `JurusanData`, `GameData`, `Interactable`, lalu `NPCGuruPiket`.' },
       { type: 'h', text: 'Script dialog' },
-      { type: 'code', file: 'NPCGuruPiket.cs', code: `using TMPro;
+      { type: 'code', file: 'NPCGuruPiket.cs', code: `using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class NPCGuruPiket : Interactable
 {
+    [Header("UI Dialog")]
     [SerializeField] private GameObject dialogPanel;
     [SerializeField] private TMP_Text dialogText;
-    [SerializeField] private Transform buttonContainer;
-    [SerializeField] private Button buttonPrefab;
+    [SerializeField] private Transform buttonContainer;   // parent tombol (pakai Vertical Layout Group)
+    [SerializeField] private Button buttonPrefab;         // prefab tombol dengan child TMP_Text
+
+    [Header("Data")]
     [SerializeField] private JurusanData[] daftarJurusan;
+
+    protected override void Start()
+    {
+        base.Start();
+        dialogPanel.SetActive(false);
+    }
 
     protected override void Interact()
     {
-        GameData.IsInDialog = true;       // player berhenti bergerak
+        GameData.IsInDialog = true;
         dialogPanel.SetActive(true);
-        ShowJurusanList();
+        ShowGreeting();
+    }
+
+    protected override void OnPlayerExit() => Close();
+
+    void ShowGreeting()
+    {
+        ClearButtons();
+        dialogText.text = "Selamat datang di sekolah kami, calon siswa baru!\\nMau tahu jurusan apa saja yang ada?";
+        AddButton("Jurusan apa saja yang ada?", ShowJurusanList);
+        AddButton("Tidak, terima kasih", Close);
     }
 
     void ShowJurusanList()
     {
         ClearButtons();
-        dialogText.text = "Pilih jurusan yang ingin kamu kunjungi:";
+        dialogText.text = "Berikut jurusan di sekolah kami. Pilih jurusan yang ingin kamu kunjungi:";
 
         foreach (var jurusan in daftarJurusan)
-            AddButton(jurusan.namaJurusan, () => ChooseJurusan(jurusan));
+        {
+            var j = jurusan; // salin agar aman dipakai di lambda
+            AddButton(j.namaJurusan, () => ChooseJurusan(j));
+        }
     }
 
-    void AddButton(string label, System.Action onClick)
+    void ChooseJurusan(JurusanData j)
+    {
+        GameData.SelectedJurusan = j;
+        ClearButtons();
+
+        dialogText.text =
+            $"<b>{j.namaJurusan}</b>\\n{j.deskripsi}\\n\\n" +
+            $"Kelasnya ada di: <b>{j.lokasiKelas}</b>.\\nSilakan menuju ke sana ya!";
+
+        AddButton("Pilih jurusan lain", ShowJurusanList);
+        AddButton("Terima kasih, saya ke sana", Close);
+    }
+
+    void Close()
+    {
+        // Saat scene berganti, panel bisa sudah dihancurkan. Periksa dulu agar tidak MissingReferenceException.
+        if (dialogPanel != null) dialogPanel.SetActive(false);
+        GameData.IsInDialog = false;
+    }
+
+    void AddButton(string label, Action onClick)
     {
         Button btn = Instantiate(buttonPrefab, buttonContainer);
         btn.GetComponentInChildren<TMP_Text>().text = label;
         btn.onClick.AddListener(() => onClick());
     }
 
-    void Close()
+    void ClearButtons()
     {
-        if (dialogPanel != null) dialogPanel.SetActive(false);   // cegah MissingReferenceException
-        GameData.IsInDialog = false;
+        foreach (Transform child in buttonContainer)
+        {
+            child.gameObject.SetActive(false);
+            Destroy(child.gameObject);
+        }
     }
-
-    // ChooseJurusan() menyimpan pilihan ke GameData,
-    // ClearButtons() menghapus tombol lama sebelum membuat yang baru.
 }` },
+      { type: 'note', kind: 'tip', title: 'Agar player berhenti saat dialog', text: 'Di `PlayerController2D` (pelajaran Player bergerak dan melompat), tambahkan di awal `Update()`: `if (GameData.IsInDialog) { moveInput = 0f; return; }`. Tanpa baris ini player tetap bisa berjalan saat dialog terbuka.' },
       { type: 'note', kind: 'warn', title: 'MissingReferenceException saat Close()', text: 'Saat scene berganti, Canvas dihancurkan lebih dulu, tetapi `OnTriggerExit2D` tetap terpanggil. Tanpa pemeriksaan `!= null`, `Close()` mengakses panel yang sudah tiada dan memunculkan error.' },
       { type: 'h', text: 'Cek pemahaman' },
       { type: 'quiz', questions: [
@@ -281,30 +338,96 @@ public class NPCGuruPiket : Interactable
     xp: 120,
     blocks: [
       { type: 'p', text: 'Saat scene diganti, semua GameObject lama hilang. Data yang masih dibutuhkan, seperti jurusan terpilih dan skor, harus disimpan di tempat yang tidak ikut hilang. Cara paling sederhana adalah kelas `static`.' },
-      { type: 'code', file: 'GameData.cs', code: `public static class GameData
+      { type: 'code', file: 'GameData.cs', code: `using UnityEngine;
+
+// Data yang dibawa antar scene (static, tidak perlu GameObject).
+public static class GameData
 {
     public static JurusanData SelectedJurusan;
     public static int Score;
+    public static int CorrectAnswers;
+    public static int TotalQuestions;
     public static bool IsInDialog;   // true = player tidak boleh bergerak
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetOnStart() => ResetAll();
+
+    public static void ResetQuiz()
+    {
+        Score = 0;
+        CorrectAnswers = 0;
+        TotalQuestions = 0;
+    }
+
+    public static void ResetAll()
+    {
+        SelectedJurusan = null;
+        IsInDialog = false;
+        ResetQuiz();
+    }
 }` },
-      { type: 'p', text: 'Pintu kelas memeriksa pilihan player sebelum memindahkan scene. Tambahkan `using UnityEngine.SceneManagement;` di bagian atas file.' },
-      { type: 'code', file: 'DoorKelas.cs', code: `protected override void Interact()
+      { type: 'p', text: 'Pintu kelas memeriksa pilihan player sebelum memindahkan scene. Berikut script lengkapnya, siap disalin ke `DoorKelas.cs`. Script ini memakai `GameData` (di atas) dan `JurusanData` (pelajaran Kuis dan skor), jadi buat kedua berkas itu lebih dulu.' },
+      { type: 'code', file: 'DoorKelas.cs', code: `using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class DoorKelas : Interactable
 {
-    var pilihan = GameData.SelectedJurusan;
+    [Header("Pintu")]
+    [SerializeField] private JurusanData jurusanPintu;          // jurusan yang dimiliki pintu ini
+    [SerializeField] private string sceneKelas = "Scene_Kelas"; // nama scene ruang kelas
 
-    if (pilihan == null)
+    [Header("Pesan (opsional)")]
+    [SerializeField] private TMP_Text pesanText;                // teks mengambang di atas pintu
+
+    private Coroutine pesanRoutine;
+
+    protected override void Start()
     {
-        ShowMessage("Tanyakan dulu ke Guru Piket.");
-        return;
+        base.Start();
+        if (pesanText != null) pesanText.gameObject.SetActive(false);
     }
 
-    if (pilihan != jurusanPintu)
+    protected override void Interact()
     {
-        ShowMessage("Ini bukan kelas tujuanmu.");
-        return;
+        var pilihan = GameData.SelectedJurusan;
+
+        if (pilihan == null)
+        {
+            ShowMessage("Tanyakan dulu ke Guru Piket, jurusan mana yang ingin kamu datangi.");
+            return;
+        }
+
+        if (pilihan != jurusanPintu)
+        {
+            ShowMessage($"Ini kelas {jurusanPintu.singkatan}. Kelas tujuanmu: {pilihan.lokasiKelas}.");
+            return;
+        }
+
+        SceneManager.LoadScene(sceneKelas);
     }
 
-    SceneManager.LoadScene("Scene_Kelas");
+    void ShowMessage(string pesan)
+    {
+        if (pesanText == null)
+        {
+            Debug.Log(pesan);
+            return;
+        }
+
+        pesanText.text = pesan;
+        pesanText.gameObject.SetActive(true);
+
+        if (pesanRoutine != null) StopCoroutine(pesanRoutine);
+        pesanRoutine = StartCoroutine(HideAfter(3f));
+    }
+
+    IEnumerator HideAfter(float detik)
+    {
+        yield return new WaitForSeconds(detik);
+        if (pesanText != null) pesanText.gameObject.SetActive(false);
+    }
 }` },
       { type: 'h', text: 'Agar LoadScene berhasil' },
       { type: 'steps', items: [
@@ -334,22 +457,31 @@ public class NPCGuruPiket : Interactable
     xp: 150,
     blocks: [
       { type: 'p', text: '`ScriptableObject` adalah wadah data yang disimpan sebagai file di Project. Satu file untuk satu jurusan, lengkap dengan soalnya. Menambah soal tidak perlu mengubah kode, cukup mengisi Inspector.' },
-      { type: 'code', file: 'JurusanData.cs', code: `[System.Serializable]
+      { type: 'code', file: 'JurusanData.cs', code: `using UnityEngine;
+
+// Buat aset lewat: klik kanan di Project > Create > PPDB > Jurusan
+[CreateAssetMenu(fileName = "Jurusan_", menuName = "PPDB/Jurusan")]
+public class JurusanData : ScriptableObject
+{
+    [Header("Info Jurusan")]
+    public string namaJurusan;                 // contoh: Rekayasa Perangkat Lunak
+    public string singkatan;                   // contoh: RPL
+    [TextArea(2, 5)] public string deskripsi;  // penjelasan singkat jurusan
+    public string lokasiKelas;                 // contoh: "Pintu ketiga dari kiri, lantai 1"
+
+    [Header("Kuis")]
+    public int soalPerSesi = 5;                // jumlah soal yang diambil secara acak
+    public QuestionData[] soal;
+}` },
+      { type: 'code', file: 'QuestionData.cs', code: `using System;
+using UnityEngine;
+
+[Serializable]
 public class QuestionData
 {
     [TextArea(2, 4)] public string pertanyaan;
     public string[] pilihan = new string[4];
-    [Range(0, 3)] public int indexBenar;   // 0 = pilihan pertama
-}
-
-[CreateAssetMenu(fileName = "Jurusan_", menuName = "PPDB/Jurusan")]
-public class JurusanData : ScriptableObject
-{
-    public string namaJurusan;
-    [TextArea(2, 5)] public string deskripsi;
-    public string lokasiKelas;
-    public int soalPerSesi = 5;
-    public QuestionData[] soal;
+    [Range(0, 3)] public int indexBenar;   // 0 = pilihan pertama, dst.
 }` },
       { type: 'p', text: 'Buat aset lewat klik kanan di Project, lalu **Create > PPDB > Jurusan**. Satu aset untuk tiap jurusan.' },
       { type: 'h', text: 'Mengacak soal' },
@@ -358,22 +490,213 @@ sesi = jurusan.soal
     .OrderBy(_ => Random.value)
     .Take(jurusan.soalPerSesi)
     .ToList();` },
-      { type: 'h', text: 'Menjawab dan menghitung skor' },
-      { type: 'code', file: 'NPCGuruKejuruan.cs', code: `void Answer(int pilihan)
+      { type: 'h', text: 'Script lengkap kuis' },
+      { type: 'p', text: 'Berikut `NPCGuruKejuruan.cs` utuh: mengacak soal, menghitung skor, dan menampilkan hasil. Bagian `Answer()` menjadi inti penilaiannya. Semua field di Inspector harus terisi; field kosong menimbulkan `NullReferenceException`.' },
+      { type: 'code', file: 'NPCGuruKejuruan.cs', code: `using System.Collections.Generic;
+using System.Linq;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class NPCGuruKejuruan : Interactable
 {
-    if (!bolehMenjawab) return;     // cegah klik dua kali
-    bolehMenjawab = false;
+    [Header("Panel UI")]
+    [SerializeField] private GameObject dialogRoot;
+    [SerializeField] private GameObject introGroup;
+    [SerializeField] private GameObject quizGroup;
+    [SerializeField] private GameObject resultGroup;
 
-    QuestionData q = sesi[indexSoal];
+    [Header("Intro")]
+    [SerializeField] private TMP_Text introText;
+    [SerializeField] private Button startButton;
+    [SerializeField] private Button closeButton;
 
-    if (pilihan == q.indexBenar)
+    [Header("Kuis")]
+    [SerializeField] private TMP_Text pertanyaanText;
+    [SerializeField] private TMP_Text feedbackText;
+    [SerializeField] private TMP_Text skorText;
+    [SerializeField] private Button[] jawabanButtons;   // isi 4 tombol
+    [SerializeField] private Button nextButton;
+
+    [Header("Hasil")]
+    [SerializeField] private TMP_Text hasilText;
+    [SerializeField] private Button retryButton;
+    [SerializeField] private Button backButton;
+
+    [Header("Pengaturan")]
+    [SerializeField] private int poinPerJawabanBenar = 10;
+    [SerializeField] private string sceneSekolah = "Scene_Sekolah";
+    [SerializeField] private JurusanData jurusanUjiCoba;   // dipakai jika scene ini dijalankan langsung (testing)
+
+    private JurusanData jurusan;
+    private List<QuestionData> sesi;
+    private int indexSoal;
+    private bool bolehMenjawab;
+
+    protected override void Start()
     {
-        GameData.Score += poinPerJawabanBenar;
-        feedbackText.text = $"Benar! +{poinPerJawabanBenar} poin";
+        base.Start();
+
+        jurusan = GameData.SelectedJurusan != null ? GameData.SelectedJurusan : jurusanUjiCoba;
+
+        startButton.onClick.AddListener(StartQuiz);
+        closeButton.onClick.AddListener(Close);
+        nextButton.onClick.AddListener(NextQuestion);
+        retryButton.onClick.AddListener(StartQuiz);
+        backButton.onClick.AddListener(BackToSchool);
+
+        dialogRoot.SetActive(false);
     }
-    else
+
+    protected override void Interact()
     {
-        feedbackText.text = $"Kurang tepat. Jawaban benar: {q.pilihan[q.indexBenar]}";
+        GameData.IsInDialog = true;
+        dialogRoot.SetActive(true);
+        ShowIntro();
+    }
+
+    void ShowIntro()
+    {
+        SetGroup(intro: true);
+
+        if (jurusan == null || jurusan.soal == null || jurusan.soal.Length == 0)
+        {
+            introText.text = "Maaf, soal untuk jurusan ini belum tersedia.";
+            startButton.gameObject.SetActive(false);
+            return;
+        }
+
+        int jumlah = Mathf.Min(jurusan.soalPerSesi, jurusan.soal.Length);
+        introText.text =
+            $"Selamat datang di jurusan <b>{jurusan.namaJurusan}</b>!\\n" +
+            $"Kerjakan {jumlah} soal pengetahuan dasar ya. " +
+            $"Setiap jawaban benar bernilai {poinPerJawabanBenar} poin.";
+        startButton.gameObject.SetActive(true);
+    }
+
+    void StartQuiz()
+    {
+        // Ambil soal secara acak
+        sesi = jurusan.soal
+            .OrderBy(_ => Random.value)
+            .Take(Mathf.Min(jurusan.soalPerSesi, jurusan.soal.Length))
+            .ToList();
+
+        GameData.ResetQuiz();
+        GameData.TotalQuestions = sesi.Count;
+        indexSoal = 0;
+
+        SetGroup(quiz: true);
+        ShowQuestion();
+    }
+
+    void ShowQuestion()
+    {
+        QuestionData q = sesi[indexSoal];
+
+        pertanyaanText.text = $"Soal {indexSoal + 1}/{sesi.Count}\\n{q.pertanyaan}";
+        feedbackText.text = "";
+        skorText.text = $"Skor: {GameData.Score}";
+        nextButton.gameObject.SetActive(false);
+        bolehMenjawab = true;
+
+        for (int i = 0; i < jawabanButtons.Length; i++)
+        {
+            Button btn = jawabanButtons[i];
+            bool dipakai = i < q.pilihan.Length && !string.IsNullOrEmpty(q.pilihan[i]);
+            btn.gameObject.SetActive(dipakai);
+            if (!dipakai) continue;
+
+            btn.GetComponentInChildren<TMP_Text>().text = q.pilihan[i];
+            btn.image.color = Color.white;
+            btn.interactable = true;
+
+            int pilihan = i;
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => Answer(pilihan));
+        }
+    }
+
+    void Answer(int pilihan)
+    {
+        if (!bolehMenjawab) return;
+        bolehMenjawab = false;
+
+        QuestionData q = sesi[indexSoal];
+        bool benar = pilihan == q.indexBenar;
+
+        if (benar)
+        {
+            GameData.Score += poinPerJawabanBenar;
+            GameData.CorrectAnswers++;
+            feedbackText.text = $"Benar! +{poinPerJawabanBenar} poin";
+        }
+        else
+        {
+            feedbackText.text = $"Kurang tepat. Jawaban yang benar: {q.pilihan[q.indexBenar]}";
+        }
+
+        // Beri warna: hijau = benar, merah = pilihan salah
+        for (int i = 0; i < jawabanButtons.Length; i++)
+        {
+            if (!jawabanButtons[i].gameObject.activeSelf) continue;
+            jawabanButtons[i].interactable = false;
+            if (i == q.indexBenar) jawabanButtons[i].image.color = new Color(0.6f, 1f, 0.6f);
+            else if (i == pilihan) jawabanButtons[i].image.color = new Color(1f, 0.6f, 0.6f);
+        }
+
+        skorText.text = $"Skor: {GameData.Score}";
+
+        bool terakhir = indexSoal >= sesi.Count - 1;
+        nextButton.GetComponentInChildren<TMP_Text>().text = terakhir ? "Lihat hasil" : "Soal berikutnya";
+        nextButton.gameObject.SetActive(true);
+    }
+
+    void NextQuestion()
+    {
+        indexSoal++;
+        if (indexSoal >= sesi.Count) ShowResult();
+        else ShowQuestion();
+    }
+
+    void ShowResult()
+    {
+        SetGroup(result: true);
+
+        int maks = GameData.TotalQuestions * poinPerJawabanBenar;
+        float persen = GameData.TotalQuestions > 0
+            ? (float)GameData.CorrectAnswers / GameData.TotalQuestions
+            : 0f;
+
+        string komentar =
+            persen >= 0.8f ? "Luar biasa! Kamu siap jadi siswa jurusan ini." :
+            persen >= 0.5f ? "Bagus! Terus belajar ya." :
+                             "Tetap semangat! Pasti bisa lebih baik.";
+
+        hasilText.text =
+            $"Hasil kuis {jurusan.namaJurusan}\\n\\n" +
+            $"Benar: {GameData.CorrectAnswers}/{GameData.TotalQuestions}\\n" +
+            $"Skor: {GameData.Score}/{maks}\\n\\n{komentar}";
+    }
+
+    void SetGroup(bool intro = false, bool quiz = false, bool result = false)
+    {
+        introGroup.SetActive(intro);
+        quizGroup.SetActive(quiz);
+        resultGroup.SetActive(result);
+    }
+
+    void Close()
+    {
+        if (dialogRoot != null) dialogRoot.SetActive(false);
+        GameData.IsInDialog = false;
+    }
+
+    void BackToSchool()
+    {
+        GameData.IsInDialog = false;
+        SceneManager.LoadScene(sceneSekolah);
     }
 }` },
       { type: 'note', kind: 'tip', title: 'Menguji tanpa lewat Scene_Sekolah', text: 'Sediakan field `jurusanUjiCoba` di NPC Guru Kejuruan. Kalau `GameData.SelectedJurusan` kosong, pakai jurusan uji coba itu agar scene kelas bisa dites sendiri.' },
@@ -539,18 +862,19 @@ sesi = jurusan.soal
 
       { type: 'h', text: '3. Alur permainan' },
       { type: 'p', text: 'Gambarkan satu putaran bermain sebagai urutan langkah. Percabangan (keputusan) ditandai terpisah. Contoh di bawah punya 9 langkah dan 1 percabangan.' },
-      { type: 'flow', title: 'Satu putaran bermain', items: [
+      { type: 'steps', items: [
         'Muncul di koridor sekolah',
         'Bicara dengan Guru Piket (tekan E)',
         'Pilih jurusan dan lihat lokasi kelas',
         'Ke pintu kelas, tekan E',
-        { decision: 'Jurusan cocok?', no: 'Tidak: muncul pesan petunjuk, pemain bisa mencoba lagi', yes: 'Ya: pemain pindah ke ruang kelas' },
+        '**Percabangan:** jika jurusan cocok, pemain pindah ke ruang kelas. Jika tidak, muncul pesan petunjuk dan pemain bisa mencoba lagi',
         'Masuk ruang kelas jurusan',
         'Bicara dengan Guru Kejuruan',
         'Jawab soal acak, +10 untuk tiap jawaban benar',
         'Lihat hasil dan skor',
         'Ulangi kuis atau kembali ke koridor'
-      ], caption: 'Pintu kelas hanya terbuka untuk jurusan yang dipilih di Guru Piket.' },
+      ] },
+      { type: 'note', kind: 'tip', title: 'Aturan pintu', text: 'Pintu kelas hanya terbuka untuk jurusan yang dipilih di Guru Piket.' },
       { type: 'p', text: 'Tutup bagian ini dengan **kondisi selesai**: kapan game dianggap tamat? Misalnya setelah satu kuis, atau setelah semua jurusan dicoba. Keputusan ini memengaruhi seluruh rancangan, jadi jangan dibiarkan kosong terlalu lama.' },
 
       { type: 'h', text: '4. Mekanik dan kontrol' },
