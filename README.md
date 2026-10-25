@@ -2,7 +2,6 @@
 
 Modul langkah demi langkah untuk membuat game edukasi **Susun Kata** (huruf diacak, pemain menyusun menjadi kata yang benar) menggunakan Unity 2D/UI.
 
-> Penyusun: _(isi nama Anda)_
 > Versi Unity yang disarankan: **2021.3 LTS atau lebih baru**
 > Bahasa pemrograman: **C#**
 
