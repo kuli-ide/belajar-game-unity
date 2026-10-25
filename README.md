@@ -37,14 +37,14 @@ Menu ──► SusunKata1 ──► SusunKata2 ──► Hasil ──► Menu
 | No | Berkas | Isi |
 |---|---|---|
 | 0 | [00-persiapan-proyek.md](00-persiapan-proyek.md) | Membuat proyek, folder, Canvas, dan 2 Prefab |
-| 1 | [docs/01-scene-menu.md](docs/01-scene-menu.md) | Scene **Menu** |
-| 2 | [docs/02-scene-tentang.md](docs/02-scene-tentang.md) | Scene **Tentang** |
-| 3 | [docs/03-scene-susun-kata-1.md](docs/03-scene-susun-kata-1.md) | Scene **SusunKata1** |
-| 4 | [docs/04-scene-susun-kata-2.md](docs/04-scene-susun-kata-2.md) | Scene **SusunKata2** |
-| 5 | [docs/05-scene-hasil.md](docs/05-scene-hasil.md) | Scene **Hasil** |
-| 6 | [docs/06-game-manager.md](docs/06-game-manager.md) | Penjelasan rinci script **GameManager** |
-| 7 | [docs/07-uji-dan-build.md](docs/07-uji-dan-build.md) | Pengujian, masalah umum, dan build |
-| - | [Scripts/GameManager.cs](Scripts/GameManager.cs) | Kode lengkap |
+| 1 | [01-scene-menu.md](01-scene-menu.md) | Scene **Menu** |
+| 2 | [02-scene-tentang.md](02-scene-tentang.md) | Scene **Tentang** |
+| 3 | [03-scene-susun-kata-1.md](03-scene-susun-kata-1.md) | Scene **SusunKata1** |
+| 4 | [04-scene-susun-kata-2.md](04-scene-susun-kata-2.md) | Scene **SusunKata2** |
+| 5 | [05-scene-hasil.md](05-scene-hasil.md) | Scene **Hasil** |
+| 6 | [06-game-manager.md](06-game-manager.md) | Penjelasan rinci script **GameManager** |
+| 7 | [/07-uji-dan-build.md](07-uji-dan-build.md) | Pengujian, masalah umum, dan build |
+| - | [GameManager.cs](GameManager.cs) | Kode lengkap |
 
 **Urutan pengerjaan yang disarankan:** 0 → 6 (pahami script) → 1 → 2 → 3 → 4 → 5 → 7.
 
