@@ -190,17 +190,40 @@
       '<p class="toc-title">Peta belajar</p><ol>' +
       LESSONS.map(function (l, i) {
         return groupHeading(l, i, 'toc-group', 'span') + '<li><a href="#/belajar/' + l.id + '"' + (l.id === activeId ? ' aria-current="page"' : '') + '>' +
-          '<span class="n">' + (i + 1) + '</span><span>' + esc(l.title) + '</span>' +
+          '<span class="n">' + lessonNo(l) + '</span><span>' + esc(l.title) + '</span>' +
           (state.done[l.id] ? '<span class="chk" aria-label="selesai">✓</span>' : '') + '</a></li>';
       }).join('') + '</ol></details>';
   }
 
   // ---------- kelompok pelajaran ----------
+  // Pelajaran dikelompokkan menjadi Level. Pelajaran tanpa properti `group` masuk Level 1.
+  // Level ditentukan oleh urutan kemunculan group di array LESSONS.
   const DEFAULT_GROUP = 'Dasar Unity 2D: game sekolah';
+  const LEVEL_INFO = {
+    'Dasar Unity 2D: game sekolah': 'Fondasi: gerak dan lompat, trigger, dialog NPC, pindah scene, kuis, membaca error, dan GDD.',
+    'Game Susun Kata': 'Proyek lengkap: lima scene, satu GameManager, demo yang bisa dimainkan, dan build.'
+  };
   function groupOf(l) { return l.group || DEFAULT_GROUP; }
+  function levelList() {
+    const order = [];
+    LESSONS.forEach(function (l) { if (order.indexOf(groupOf(l)) < 0) order.push(groupOf(l)); });
+    return order;
+  }
+  function levelNo(l) { return levelList().indexOf(groupOf(l)) + 1; }
+  function inLevel(l) { return LESSONS.filter(function (x) { return groupOf(x) === groupOf(l); }); }
+  function lessonNo(l) { return levelNo(l) + '.' + (inLevel(l).indexOf(l) + 1); }
   function groupHeading(l, i, cls, tag) {
     if (i > 0 && groupOf(LESSONS[i - 1]) === groupOf(l)) return '';
-    return '<li class="' + cls + '"><' + tag + '>' + esc(groupOf(l)) + '</' + tag + '></li>';
+    const lv = levelNo(l);
+    if (cls === 'toc-group') {
+      return '<li class="toc-group"><span>Level ' + lv + ' · ' + esc(groupOf(l)) + '</span></li>';
+    }
+    const items = inLevel(l);
+    const done = items.filter(function (x) { return state.done[x.id]; }).length;
+    return '<li class="level-group"><div class="lg-top"><span class="lg-tag">Level ' + lv + '</span>' +
+      '<' + tag + '>' + esc(groupOf(l)) + '</' + tag + '>' +
+      '<span class="pill lg-prog">' + done + '/' + items.length + ' selesai</span></div>' +
+      (LEVEL_INFO[groupOf(l)] ? '<p class="lg-info">' + esc(LEVEL_INFO[groupOf(l)]) + '</p>' : '') + '</li>';
   }
 
   // ---------- widget Susun Kata ----------
@@ -256,7 +279,7 @@
               const isNext = next && next.id === l.id;
               const st = done ? 'done' : (isNext ? 'next' : 'open');
               return groupHeading(l, i, 'level-group', 'h3') + '<li><a class="level" data-state="' + st + '" href="#/belajar/' + l.id + '">' +
-                '<span class="lv-top"><span class="lv-n">' + (i + 1) + '</span>' +
+                '<span class="lv-top"><span class="lv-n">' + lessonNo(l) + '</span>' +
                 '<span class="lv-flag">' + (done ? 'Selesai ✓' : (isNext ? 'Berikutnya' : '')) + '</span></span>' +
                 '<span class="lv-t">' + esc(l.title) + '</span>' +
                 '<span class="lv-s">' + esc(l.summary) + '</span>' +
@@ -281,7 +304,7 @@
         '<nav aria-label="Daftar pelajaran">' + renderToc(lesson.id) + '</nav>' +
         '<article class="prose">' +
           '<header class="lesson-head">' +
-            '<div class="crumb"><a href="#/">Beranda</a> / Pelajaran ' + (idx + 1) + ' dari ' + LESSONS.length + '</div>' +
+            '<div class="crumb"><a href="#/">Beranda</a> / Level ' + levelNo(lesson) + ' · Pelajaran ' + (inLevel(lesson).indexOf(lesson) + 1) + ' dari ' + inLevel(lesson).length + '</div>' +
             '<h1>' + esc(lesson.title) + '</h1>' +
             '<p class="lesson-sum">' + esc(lesson.summary) + '</p>' +
             '<div class="lv-meta">' + metaPills(lesson) + '</div>' +

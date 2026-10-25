@@ -1,12 +1,12 @@
 /* Pelajaran proyek "Game Susun Kata".
    Ditambahkan ke array LESSONS yang dibuat di lessons.js (berkas ini harus dimuat sesudahnya).
-   Properti `group` dipakai app.js untuk membuat judul kelompok di peta belajar dan daftar pelajaran.
+   Properti `group` dipakai app.js untuk membuat Level di peta belajar dan daftar pelajaran (pelajaran ini membentuk Level 2).
    Jenis block tambahan: wordgame (demo game), inspector (panel Inspector GameManager), scenemap (peta scene). */
 LESSONS.push(
   // ===================== 1. Persiapan =====================
   {
     id: 'sk-persiapan',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Susun Kata: menyiapkan project, scene, dan prefab',
     summary: 'Membuat project, lima scene, dan dua prefab yang dipakai ulang di seluruh game.',
     minutes: 15,
@@ -66,7 +66,7 @@ LESSONS.push(
   // ===================== 2. GameManager =====================
   {
     id: 'sk-gamemanager',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Susun Kata: GameManager untuk semua scene',
     summary: 'Satu script yang dipakai di lima scene. Peran tiap scene ditentukan oleh kolom Inspector yang diisi.',
     minutes: 25,
@@ -140,7 +140,7 @@ LESSONS.push(
   // ===================== 3. Scene Menu =====================
   {
     id: 'sk-menu',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Scene Menu: tombol mulai, tentang, keluar',
     summary: 'Membuat halaman awal dan menghubungkan tombol ke fungsi GameManager lewat On Click.',
     minutes: 12,
@@ -198,7 +198,7 @@ LESSONS.push(
   // ===================== 4. Scene Tentang =====================
   {
     id: 'sk-tentang',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Scene Tentang: halaman informasi',
     summary: 'Halaman teks statis dengan satu tombol kembali ke menu.',
     minutes: 8,
@@ -241,7 +241,7 @@ LESSONS.push(
   // ===================== 5. SusunKata1 =====================
   {
     id: 'sk-soal-1',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Scene SusunKata1: soal pertama',
     summary: 'Halaman permainan dengan dua grup. Kotak dan huruf dibuat otomatis dari prefab.',
     minutes: 20,
@@ -323,7 +323,7 @@ LESSONS.push(
   // ===================== 6. SusunKata2 =====================
   {
     id: 'sk-soal-2',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Scene SusunKata2: menambah soal dengan duplikat scene',
     summary: 'Soal kedua dibuat dengan menduplikat scene pertama dan mengubah tiga kolom.',
     minutes: 12,
@@ -392,7 +392,7 @@ LESSONS.push(
   // ===================== 7. Hasil =====================
   {
     id: 'sk-hasil',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Scene Hasil: skor dan bintang',
     summary: 'Menampilkan skor total yang dibawa dari scene soal dan menyalakan 1 sampai 3 bintang.',
     minutes: 15,
@@ -460,7 +460,7 @@ LESSONS.push(
   // ===================== 8. Uji dan build =====================
   {
     id: 'sk-uji-build',
-    group: 'Proyek: Game Susun Kata',
+    group: 'Game Susun Kata',
     title: 'Susun Kata: menguji, memperbaiki error, dan build',
     summary: 'Daftar uji lengkap, error yang paling sering muncul, build Android atau WebGL, dan unggah ke GitHub.',
     minutes: 12,
