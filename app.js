@@ -10,6 +10,7 @@
   const main = document.getElementById('main');
   let state = { done: {}, quiz: {} };
   let playground = null;
+  let skInstances = [];
 
   // ---------- penyimpanan ----------
   function loadState() {
@@ -33,12 +34,13 @@
   function fmt(s) {
     return esc(s)
       .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[([^\]]+)\]\((#\/[\w\/-]*)\)/g, '<a href="$2">$1</a>');
   }
 
   // Penyorot sintaks C# sederhana
   const KW = 'using|public|private|protected|class|void|new|if|else|return|static|bool|int|float|string|foreach|for|while|true|false|null|this|base|abstract|virtual|override|const|var|yield|break|continue|switch|case|default|get|set|is|as';
-  const TY = 'MonoBehaviour|GameObject|Transform|Rigidbody2D|Collider2D|Vector2|Vector3|KeyCode|Input|Debug|Mathf|Time|SceneManager|UnityWebRequest|IEnumerator|TMP_Text|Button|Action|Random|Color|QuestionData|JurusanData|GameData|ScriptableObject|Physics2D|LayerMask|SpriteRenderer|JsonUtility|FlightPriceList|Interactable|NPCGuruPiket|Result';
+  const TY = 'MonoBehaviour|GameObject|Transform|Rigidbody2D|Collider2D|Vector2|Vector3|KeyCode|Input|Debug|Mathf|Time|SceneManager|UnityWebRequest|IEnumerator|TMP_Text|Button|Action|Random|Color|QuestionData|JurusanData|GameData|ScriptableObject|Physics2D|LayerMask|SpriteRenderer|JsonUtility|AudioClip|AudioSource|List|Text|Application|GameObject|FlightPriceList|Interactable|NPCGuruPiket|Result';
   const TOKEN = new RegExp(
     '(\\/\\/[^\\n]*)' +                                       // 1 komentar
     '|("(?:[^"\\\\\\n]|\\\\.)*")' +                           // 2 string
@@ -120,6 +122,12 @@
           '<pre tabindex="0"><code>' + highlight(b.code) + '</code></pre></figure>';
       case 'playground':
         return '<div class="wide" data-mount="playground"></div>';
+      case 'wordgame':
+        return '<div class="wide" data-mount="wordgame"></div>';
+      case 'inspector':
+        return '<div class="wide" data-mount="inspector" data-block="' + i + '"></div>';
+      case 'scenemap':
+        return '<div class="wide" data-mount="scenemap" data-block="' + i + '"></div>';
       case 'quiz':
         return '<div class="quiz" data-mount="quiz" data-block="' + i + '"></div>';
       default: return '';
@@ -181,15 +189,37 @@
     return '<details class="toc"><summary>Daftar pelajaran</summary>' +
       '<p class="toc-title">Peta belajar</p><ol>' +
       LESSONS.map(function (l, i) {
-        return '<li><a href="#/belajar/' + l.id + '"' + (l.id === activeId ? ' aria-current="page"' : '') + '>' +
+        return groupHeading(l, i, 'toc-group', 'span') + '<li><a href="#/belajar/' + l.id + '"' + (l.id === activeId ? ' aria-current="page"' : '') + '>' +
           '<span class="n">' + (i + 1) + '</span><span>' + esc(l.title) + '</span>' +
           (state.done[l.id] ? '<span class="chk" aria-label="selesai">✓</span>' : '') + '</a></li>';
       }).join('') + '</ol></details>';
   }
 
+  // ---------- kelompok pelajaran ----------
+  const DEFAULT_GROUP = 'Dasar Unity 2D: game sekolah';
+  function groupOf(l) { return l.group || DEFAULT_GROUP; }
+  function groupHeading(l, i, cls, tag) {
+    if (i > 0 && groupOf(LESSONS[i - 1]) === groupOf(l)) return '';
+    return '<li class="' + cls + '"><' + tag + '>' + esc(groupOf(l)) + '</' + tag + '></li>';
+  }
+
+  // ---------- widget Susun Kata ----------
+  function mountSk(lesson) {
+    if (!window.SK) return;
+    main.querySelectorAll('[data-mount="wordgame"]').forEach(function (m) {
+      skInstances.push(window.SK.createWordGame(m));
+    });
+    main.querySelectorAll('[data-mount="inspector"], [data-mount="scenemap"]').forEach(function (m) {
+      const b = lesson.blocks[parseInt(m.getAttribute('data-block'), 10)];
+      if (b.type === 'inspector') window.SK.mountInspector(m, b); else window.SK.mountSceneMap(m, b);
+    });
+  }
+
   // ---------- halaman ----------
   function teardown() {
     if (playground) { playground.destroy(); playground = null; }
+    skInstances.forEach(function (g) { g.destroy(); });
+    skInstances = [];
   }
 
   function renderHome() {
@@ -225,7 +255,7 @@
               const done = !!state.done[l.id];
               const isNext = next && next.id === l.id;
               const st = done ? 'done' : (isNext ? 'next' : 'open');
-              return '<li><a class="level" data-state="' + st + '" href="#/belajar/' + l.id + '">' +
+              return groupHeading(l, i, 'level-group', 'h3') + '<li><a class="level" data-state="' + st + '" href="#/belajar/' + l.id + '">' +
                 '<span class="lv-top"><span class="lv-n">' + (i + 1) + '</span>' +
                 '<span class="lv-flag">' + (done ? 'Selesai ✓' : (isNext ? 'Berikutnya' : '')) + '</span></span>' +
                 '<span class="lv-t">' + esc(l.title) + '</span>' +
@@ -276,6 +306,7 @@
       mountQuiz(m, lesson, lesson.blocks[parseInt(m.getAttribute('data-block'), 10)]);
     });
     mountPlayground();
+    mountSk(lesson);
 
     document.getElementById('doneBtn').addEventListener('click', function () {
       state.done[lesson.id] = !state.done[lesson.id];

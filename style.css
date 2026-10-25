@@ -573,3 +573,231 @@ a { color: inherit; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; }
 }
+
+/* ---------- Kelompok pelajaran (peta belajar dan daftar pelajaran) ---------- */
+.level-group { grid-column: 1 / -1; margin-top: 10px; }
+.level-group:first-child { margin-top: 0; }
+.level-group h3 {
+  margin: 0;
+  padding-bottom: 6px;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  border-bottom: 2px dashed var(--line);
+}
+.toc-group { padding: 12px 10px 2px; }
+.toc-group:first-child { padding-top: 2px; }
+.toc-group span {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Susun Kata: demo game ---------- */
+.sk { display: grid; gap: 18px; margin: 1.2rem 0 1.5rem; }
+.sk-stage {
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 var(--shadow);
+  background: var(--pg-sky);
+  overflow: hidden;
+}
+.sk-screen {
+  min-height: 360px;
+  padding: 22px 16px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+  color: var(--pg-ink);
+}
+.sk-title { margin: 0; font-size: clamp(1.7rem, 4.4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; }
+.sk-btns { display: grid; gap: 12px; justify-items: center; }
+.sk-btns .btn { min-width: 220px; }
+.sk-about { margin: 0; max-width: 40ch; }
+.sk-head { display: flex; width: 100%; max-width: 560px; justify-content: space-between; align-items: center; font-weight: 800; }
+.sk-head .pill { background: var(--surface); color: var(--ink); }
+.sk-hint { margin: 0; font-size: 0.95rem; color: var(--muted); }
+.sk-slots, .sk-letters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 560px; }
+.sk-slots { margin-top: 6px; }
+.sk-letters { margin-top: 10px; }
+.sk-slot, .sk-letter {
+  appearance: none;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  font: 800 1.5rem/1 var(--font);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.sk-slot { background: var(--surface); color: var(--ink); box-shadow: inset 0 -4px 0 rgba(16, 35, 63, 0.12); }
+.sk-slot.filled { background: var(--next-bg); }
+.sk-letter { background: var(--accent); color: var(--on-accent); box-shadow: 3px 3px 0 var(--shadow); transition: transform 0.08s, box-shadow 0.08s; }
+.sk-letter:not(:disabled):hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+.sk-letter:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+.sk-letter:disabled { background: var(--bg); color: var(--muted); box-shadow: none; transform: translate(2px, 2px); cursor: default; }
+.sk-fb { margin: 0; min-height: 1.6em; font-weight: 700; }
+.sk-fb.ok { color: var(--good); }
+.sk-fb.no { color: var(--bad); }
+.sk-slots.right .sk-slot { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.sk-slots.wrong { animation: sk-shake 0.35s; }
+.sk-slots.wrong .sk-slot { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+@keyframes sk-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+.sk-stars { display: flex; gap: 10px; }
+.sk-star svg { display: block; fill: var(--bg); stroke: var(--line); stroke-width: 1.6; opacity: 0.8; }
+.sk-star.on svg { fill: var(--accent); opacity: 1; }
+.sk-star.on { animation: sk-pop 0.45s ease-out both; }
+.sk-star.on:nth-child(2) { animation-delay: 0.12s; }
+.sk-star.on:nth-child(3) { animation-delay: 0.24s; }
+@keyframes sk-pop {
+  0% { transform: scale(0.3); }
+  70% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.sk-score { margin: 0; font-size: 2rem; font-weight: 800; }
+.sk-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 10px;
+  font: 600 0.95rem var(--mono);
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  text-transform: uppercase;
+}
+.sk-panel { grid-template-columns: 1.4fr 1fr; }
+@media (max-width: 760px) { .sk-panel { grid-template-columns: 1fr; } .sk-screen { min-height: 320px; } }
+@media (max-width: 420px) { .sk-slot, .sk-letter { width: 44px; height: 44px; font-size: 1.25rem; } }
+
+/* ---------- Susun Kata: tiruan Inspector ---------- */
+.sk-insp {
+  margin: 1.2rem 0 1.5rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 var(--shadow);
+  background: var(--surface);
+  overflow: hidden;
+}
+.sk-insp-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 9px 14px;
+  background: var(--code-bar);
+  color: var(--code-ink);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+.sk-insp-head .pill { background: transparent; border-color: #5a7092; color: var(--code-ink); }
+.sk-insp-g h4 {
+  margin: 0;
+  padding: 8px 14px 6px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  background: var(--bg);
+  border-top: 2px solid var(--line);
+}
+.sk-row {
+  appearance: none;
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) 1.5fr;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 6px 14px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-top: 1.5px solid var(--bg);
+  cursor: pointer;
+}
+.sk-row:hover { background: var(--info-bg); }
+.sk-row[aria-pressed="true"] { background: var(--info-bg); outline: 3px solid var(--focus); outline-offset: -3px; }
+.sk-k { font-size: 0.95rem; }
+.sk-v {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 3px 8px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.sk-v.on { color: var(--good); background: var(--good-bg); border-color: var(--good); font-weight: 600; }
+.sk-info {
+  margin: 0;
+  padding: 12px 14px;
+  min-height: 5.2em;
+  font-size: 0.95rem;
+  background: var(--next-bg);
+  border-top: 2px solid var(--line);
+}
+.sk-insp-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  border-top: 2px solid var(--line);
+  font-size: 0.92rem;
+}
+.sk-count { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); }
+@media (max-width: 520px) { .sk-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* ---------- Susun Kata: peta scene ---------- */
+.sk-map {
+  margin: 1.2rem 0 1.5rem;
+  padding: 16px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+.sk-map-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sk-map-row.sub { margin-top: 12px; }
+.sk-node {
+  appearance: none;
+  min-height: 44px;
+  padding: 8px 14px;
+  font: 800 1rem var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 3px 3px 0 var(--shadow);
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.sk-node:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+.sk-node[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.sk-arrow { font-weight: 800; color: var(--muted); }
+.sk-map-card {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--info-bg);
+  border: 2px solid var(--line);
+  border-left-width: 8px;
+  border-radius: var(--radius);
+}
+.sk-map-card ul { margin: 6px 0 8px; padding-left: 1.2em; }
+.sk-map-card a { font-weight: 700; text-underline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-slots.wrong, .sk-star.on { animation: none; }
+}
