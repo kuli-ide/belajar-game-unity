@@ -36,7 +36,7 @@ Menu ──► SusunKata1 ──► SusunKata2 ──► Hasil ──► Menu
 
 | No | Berkas | Isi |
 |---|---|---|
-| 0 | [docs/00-persiapan-proyek.md](docs/00-persiapan-proyek.md) | Membuat proyek, folder, Canvas, dan 2 Prefab |
+| 0 | [00-persiapan-proyek.md](00-persiapan-proyek.md) | Membuat proyek, folder, Canvas, dan 2 Prefab |
 | 1 | [docs/01-scene-menu.md](docs/01-scene-menu.md) | Scene **Menu** |
 | 2 | [docs/02-scene-tentang.md](docs/02-scene-tentang.md) | Scene **Tentang** |
 | 3 | [docs/03-scene-susun-kata-1.md](docs/03-scene-susun-kata-1.md) | Scene **SusunKata1** |
