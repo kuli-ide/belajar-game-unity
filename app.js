@@ -198,10 +198,10 @@
   // ---------- kelompok pelajaran ----------
   // Pelajaran dikelompokkan menjadi Level. Pelajaran tanpa properti `group` masuk Level 1.
   // Level ditentukan oleh urutan kemunculan group di array LESSONS.
-  const DEFAULT_GROUP = 'Dasar Unity 2D: game sekolah';
+  const DEFAULT_GROUP = 'Level 1: Game sekolah';
   const LEVEL_INFO = {
-    'Dasar Unity 2D: game sekolah': 'Fondasi: gerak dan lompat, trigger, dialog NPC, pindah scene, kuis, membaca error, dan GDD.',
-    'Game Susun Kata': 'Proyek lengkap: lima scene, satu GameManager, demo yang bisa dimainkan, dan build.'
+    'Level 1: Game sekolah': 'Fondasi: gerak dan lompat, trigger, dialog NPC, pindah scene, kuis, membaca error, dan GDD.',
+    'Level 2: Game Susun Kata': 'Proyek lengkap: lima scene, satu GameManager, demo yang bisa dimainkan, dan build.'
   };
   function groupOf(l) { return l.group || DEFAULT_GROUP; }
   function levelList() {
