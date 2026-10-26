@@ -811,3 +811,21 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .sk-slots.wrong, .sk-star.on { animation: none; }
 }
+
+/* ---------- Pemberitahuan level selesai ---------- */
+.level-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 50;
+  max-width: min(92vw, 520px);
+  padding: 12px 18px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 var(--shadow);
+  transform: translateX(-50%);
+}

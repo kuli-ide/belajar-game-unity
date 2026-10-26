@@ -5,7 +5,6 @@
   const STORE_KEY = 'bgu-progress-v1';
   const THEME_KEY = 'bgu-theme';
   const XP_QUIZ = 10;
-  const XP_PER_LEVEL = 150;
 
   const main = document.getElementById('main');
   let state = { done: {}, quiz: {} };
@@ -71,14 +70,48 @@
       return sum + (state.done[l.id] ? l.xp : 0) + quizCount(l.id) * XP_QUIZ;
     }, 0);
   }
+  // XP dihitung per Level pelajaran. Bilah XP menampilkan level yang sedang dikerjakan,
+  // yaitu level pertama yang masih punya pelajaran belum selesai. Saat semua pelajaran
+  // sebuah level selesai, bilah otomatis pindah ke level berikutnya dan mulai dari 0.
+  function lessonsOfGroup(g) { return LESSONS.filter(function (l) { return groupOf(l) === g; }); }
+  function lessonMaxXP(l) {
+    return l.xp + l.blocks.reduce(function (sum, b) {
+      return sum + (b.type === 'quiz' ? b.questions.length * XP_QUIZ : 0);
+    }, 0);
+  }
+  function lessonXP(l) {
+    return (state.done[l.id] ? l.xp : 0) + quizCount(l.id) * XP_QUIZ;
+  }
+  function levelStatus() {
+    const groups = levelList();
+    let idx = groups.findIndex(function (g) {
+      return lessonsOfGroup(g).some(function (l) { return !state.done[l.id]; });
+    });
+    const all = idx < 0;
+    if (all) idx = groups.length - 1;
+    const items = lessonsOfGroup(groups[idx]);
+    const max = items.reduce(function (n, l) { return n + lessonMaxXP(l); }, 0);
+    const xp = Math.min(max, items.reduce(function (n, l) { return n + lessonXP(l); }, 0));
+    return { index: idx, all: all, xp: xp, max: max };
+  }
   function updateXP() {
-    const xp = totalXP();
-    const level = Math.floor(xp / XP_PER_LEVEL) + 1;
-    const into = xp % XP_PER_LEVEL;
-    document.getElementById('xpLevel').textContent = 'Level ' + level;
-    document.getElementById('xpText').textContent = into + '/' + XP_PER_LEVEL + ' XP';
-    document.getElementById('xpFill').style.width = (into / XP_PER_LEVEL * 100) + '%';
-    document.getElementById('xpBar').setAttribute('aria-valuenow', String(into));
+    const st = levelStatus();
+    document.getElementById('xpLevel').textContent = 'Level ' + (st.index + 1) + (st.all ? ' selesai ✓' : '');
+    document.getElementById('xpText').textContent = st.xp + '/' + st.max + ' XP';
+    document.getElementById('xpFill').style.width = (st.max ? st.xp / st.max * 100 : 0) + '%';
+    const bar = document.getElementById('xpBar');
+    bar.setAttribute('aria-valuemax', String(st.max));
+    bar.setAttribute('aria-valuenow', String(st.xp));
+  }
+  function announce(msg) {
+    const old = document.querySelector('.level-toast');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.className = 'level-toast';
+    t.setAttribute('role', 'status');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.remove(); }, 5000);
   }
 
   // ---------- helper pelajaran ----------
@@ -198,10 +231,10 @@
   // ---------- kelompok pelajaran ----------
   // Pelajaran dikelompokkan menjadi Level. Pelajaran tanpa properti `group` masuk Level 1.
   // Level ditentukan oleh urutan kemunculan group di array LESSONS.
-  const DEFAULT_GROUP = 'Level 1: Game sekolah';
+  const DEFAULT_GROUP = 'Dasar Unity 2D: game sekolah';
   const LEVEL_INFO = {
-    'Level 1: Game sekolah': 'Fondasi: gerak dan lompat, trigger, dialog NPC, pindah scene, kuis, membaca error, dan GDD.',
-    'Level 2: Game Susun Kata': 'Proyek lengkap: lima scene, satu GameManager, demo yang bisa dimainkan, dan build.'
+    'Dasar Unity 2D: game sekolah': 'Fondasi: gerak dan lompat, trigger, dialog NPC, pindah scene, kuis, membaca error, dan GDD.',
+    'Game Susun Kata': 'Proyek lengkap: lima scene, satu GameManager, demo yang bisa dimainkan, dan build.'
   };
   function groupOf(l) { return l.group || DEFAULT_GROUP; }
   function levelList() {
@@ -332,9 +365,16 @@
     mountSk(lesson);
 
     document.getElementById('doneBtn').addEventListener('click', function () {
+      const before = levelStatus();
       state.done[lesson.id] = !state.done[lesson.id];
       saveState();
       updateXP();
+      const after = levelStatus();
+      if (after.index > before.index) {
+        announce('Level ' + (before.index + 1) + ' selesai! Bilah XP kembali ke 0 untuk Level ' + (after.index + 1) + '.');
+      } else if (after.all && !before.all) {
+        announce('Semua level selesai. Kerja bagus!');
+      }
       renderLessonKeepScroll(lesson);
     });
   }
